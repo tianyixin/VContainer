@@ -134,6 +134,7 @@ namespace VContainer.Internal
                 if (openGenericRegistration.Provider is OpenGenericInstanceProvider implementationRegistration)
                 {
                     registration = implementationRegistration.GetClosedRegistration(interfaceType, typeParameters);
+                    registration.IsLocal = openGenericRegistration.IsLocal;
                     return true;
                 }
             }
@@ -169,6 +170,7 @@ namespace VContainer.Internal
                 {
                     var spawner = new ContainerLocalInstanceProvider(closedGenericType, valueRegistration);
                     newRegistration = new Registration(closedGenericType, Lifetime.Scoped, null, spawner);
+                    newRegistration.IsLocal = valueRegistration.IsLocal;
                     return true;
                 }
             }

@@ -228,6 +228,22 @@ namespace VContainer.Tests
         }
 
         [Test]
+        public void LocalRegistrationIsHiddenFromChild()
+        {
+            var builder = new ContainerBuilder();
+            builder.Register<I1, MultipleInterfaceServiceA>(Lifetime.Scoped);
+            var root = builder.Build();
+            var scene = root.CreateScope(sceneBuilder =>
+            {
+                sceneBuilder.Register<I1, MultipleInterfaceServiceB>(Lifetime.Scoped).AsLocal();
+            });
+            var child = scene.CreateScope();
+
+            Assert.That(scene.Resolve<I1>(), Is.InstanceOf<MultipleInterfaceServiceB>());
+            Assert.That(child.Resolve<I1>(), Is.InstanceOf<MultipleInterfaceServiceA>());
+        }
+
+        [Test]
         public void ResolveCollectionFromParent()
         {
             var builder = new ContainerBuilder();

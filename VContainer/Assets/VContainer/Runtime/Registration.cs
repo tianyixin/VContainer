@@ -11,6 +11,7 @@ namespace VContainer
         public readonly Lifetime Lifetime;
         public readonly IInstanceProvider Provider;
         public readonly object Key;
+        internal bool IsLocal;
 
         public Registration(
             Type implementationType,

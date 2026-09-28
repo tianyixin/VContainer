@@ -12,6 +12,7 @@ namespace VContainer
         protected internal List<Type> InterfaceTypes;
         protected internal List<IInjectParameter> Parameters;
         protected internal object Key;
+        protected internal bool IsLocal;
 
         public RegistrationBuilder(Type implementationType, Lifetime lifetime)
         {
@@ -132,6 +133,12 @@ namespace VContainer
         public RegistrationBuilder Keyed(object key)
         {
             Key = key;
+            return this;
+        }
+
+        public RegistrationBuilder AsLocal()
+        {
+            IsLocal = true;
             return this;
         }
 

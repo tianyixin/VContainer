@@ -59,7 +59,7 @@ namespace VContainer
                 {
                     if (next.TryGetRegistration(type, out var registration))
                     {
-                        if (includeInterfaceTypes || registration.ImplementationType == type)
+                        if (!registration.IsLocal && (includeInterfaceTypes || registration.ImplementationType == type))
                         {
                             return true;
                         }
@@ -145,6 +145,7 @@ namespace VContainer
             {
                 var registrationBuilder = registrationBuilders[i];
                 var registration = registrationBuilder.Build();
+                registration.IsLocal = registrationBuilder.IsLocal;
                 Diagnostics?.TraceBuild(registrationBuilder, registration);
                 registrations[i] = registration;
             });
@@ -153,6 +154,7 @@ namespace VContainer
             {
                 var registrationBuilder = registrationBuilders[i];
                 var registration = registrationBuilder.Build();
+                registration.IsLocal = registrationBuilder.IsLocal;
                 Diagnostics?.TraceBuild(registrationBuilder, registration);
                 registrations[i] = registration;
             }

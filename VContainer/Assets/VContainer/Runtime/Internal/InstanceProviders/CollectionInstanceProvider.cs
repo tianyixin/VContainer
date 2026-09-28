@@ -118,7 +118,7 @@ namespace VContainer.Internal
                 {
                     foreach (var x in parentCollection.registrations)
                     {
-                        if (!localScopeOnly || x.Lifetime != Lifetime.Singleton)
+                        if (!x.IsLocal && (!localScopeOnly || x.Lifetime != Lifetime.Singleton))
                         {
                             registrationsBuffer.Add(new RegistrationElement(x, scope));
                         }

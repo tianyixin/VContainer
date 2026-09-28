@@ -86,18 +86,18 @@ namespace VContainer
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public object Resolve(Type type, object key = null)
         {
-            if (TryFindRegistration(type, key, out var registration))
+            if (TryFindRegistration(type, key, out var registration, out var registeredScope, out var skippedLocal))
             {
-                return Resolve(registration);
+                return ResolveFoundRegistration(registration, registeredScope, skippedLocal);
             }
             throw new VContainerException(type, $"No such registration of type: {type}{(key == null ? string.Empty : $" with Key: {key}")}");
         }
 
         public bool TryResolve(Type type, out object resolved, object key = null)
         {
-            if (TryFindRegistration(type, key, out var registration))
+            if (TryFindRegistration(type, key, out var registration, out var registeredScope, out var skippedLocal))
             {
-                resolved = Resolve(registration);
+                resolved = ResolveFoundRegistration(registration, registeredScope, skippedLocal);
                 return true;
             }
 
@@ -184,19 +184,40 @@ namespace VContainer
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal bool TryFindRegistration(Type type, object key, out Registration registration)
+        object ResolveFoundRegistration(
+            Registration registration,
+            IScopedObjectResolver registeredScope,
+            bool skippedLocal)
+            => skippedLocal && registration.Lifetime == Lifetime.Singleton
+                ? registeredScope.Resolve(registration)
+                : Resolve(registration);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        internal bool TryFindRegistration(
+            Type type,
+            object key,
+            out Registration registration,
+            out IScopedObjectResolver registeredScope,
+            out bool skippedLocal)
         {
+            skippedLocal = false;
             IScopedObjectResolver scope = this;
             while (scope != null)
             {
                 if (scope.TryGetRegistration(type, out registration, key))
                 {
-                    return true;
+                    if (!registration.IsLocal || ReferenceEquals(scope, this))
+                    {
+                        registeredScope = scope;
+                        return true;
+                    }
+                    skippedLocal = true;
                 }
                 scope = scope.Parent;
             }
 
             registration = default;
+            registeredScope = default;
             return false;
         }
     }
