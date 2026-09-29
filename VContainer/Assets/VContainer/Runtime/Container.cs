@@ -188,7 +188,9 @@ namespace VContainer
             Registration registration,
             IScopedObjectResolver registeredScope,
             bool skippedLocal)
-            => skippedLocal && registration.Lifetime == Lifetime.Singleton
+            => skippedLocal &&
+               (registration.Lifetime == Lifetime.Singleton ||
+                registration.Provider is ContainerLocalInstanceProvider provider && provider.WrapsSingleton)
                 ? registeredScope.Resolve(registration)
                 : Resolve(registration);
 

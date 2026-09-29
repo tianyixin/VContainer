@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using NUnit.Framework;
+using VContainer.Internal;
 
 namespace VContainer.Tests
 {
@@ -241,6 +242,40 @@ namespace VContainer.Tests
 
             Assert.That(scene.Resolve<I1>(), Is.InstanceOf<MultipleInterfaceServiceB>());
             Assert.That(child.Resolve<I1>(), Is.InstanceOf<MultipleInterfaceServiceA>());
+        }
+
+        [Test]
+        public void ContainerLocalSkipsLocalSingletonWithoutChangingOwner()
+        {
+            var builder = new ContainerBuilder();
+            builder.Register<DisposableServiceA>(Lifetime.Singleton);
+
+            using (var root = builder.Build())
+            {
+                var rootSingleton = root.Resolve<DisposableServiceA>();
+                DisposableServiceA middleSingleton;
+                DisposableServiceA resolved;
+
+                using (var middle = root.CreateScope(scope =>
+                {
+                    scope.Register<DisposableServiceA>(Lifetime.Singleton).AsLocal();
+                }))
+                {
+                    middleSingleton = middle.Resolve<DisposableServiceA>();
+                    Assert.That(
+                        middle.Resolve<ContainerLocal<DisposableServiceA>>().Value,
+                        Is.SameAs(middleSingleton));
+
+                    using (var child = middle.CreateScope())
+                    {
+                        resolved = child.Resolve<ContainerLocal<DisposableServiceA>>().Value;
+                        Assert.That(resolved, Is.SameAs(rootSingleton));
+                    }
+                }
+
+                Assert.That(middleSingleton.Disposed, Is.True);
+                Assert.That(resolved.Disposed, Is.False);
+            }
         }
 
         [Test]

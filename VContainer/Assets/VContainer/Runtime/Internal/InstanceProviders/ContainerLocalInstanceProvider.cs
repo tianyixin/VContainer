@@ -7,6 +7,8 @@ namespace VContainer.Internal
         readonly Type wrappedType;
         readonly Registration valueRegistration;
 
+        internal bool WrapsSingleton => valueRegistration.Lifetime == Lifetime.Singleton;
+
         public ContainerLocalInstanceProvider(Type wrappedType, Registration valueRegistration)
         {
             this.wrappedType = wrappedType;
